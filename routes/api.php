@@ -11,18 +11,19 @@ use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Api\IntegrationController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-
+*/
 
 Route::middleware('api.key')->prefix('integration/v1')->group(function () {
     Route::post('/customers', [IntegrationController::class, 'createCustomer']);
     Route::get('/plans', [IntegrationController::class, 'getPlans']);
     Route::post('/subscriptions', [IntegrationController::class, 'createSubscription']);
-});*/
+});
 
 // Public Routes - License Validation (مهم جداً للتطبيقات)
 Route::post('/v1/licenses/validate', [LicenseValidationController::class, 'validate']);
@@ -40,11 +41,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
     });
 });
-Route::middleware(['api.key', 'rate.limit.api:120'])->group(function () {
+/*Route::middleware(['api.key', 'rate.limit.api:120'])->group(function () {
     Route::post('/v1/licenses/validate', [LicenseValidationController::class, 'validate']);
-});
+});*/
 // Protected Admin Routes
-Route::middleware(['api.key', 'rate.limit.api:60'])->prefix('integration/v1')->group(function () {
+Route::middleware(['api.key'])->prefix('integration/v1')->group(function () {
 
     // Products
     Route::apiResource('products', ProductController::class);
