@@ -40,9 +40,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
     });
 });
-
+Route::middleware(['api.key', 'rate.limit.api:120'])->group(function () {
+    Route::post('/v1/licenses/validate', [LicenseValidationController::class, 'validate']);
+});
 // Protected Admin Routes
-Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
+Route::middleware(['api.key', 'rate.limit.api:60'])->prefix('integration/v1')->group(function () {
 
     // Products
     Route::apiResource('products', ProductController::class);

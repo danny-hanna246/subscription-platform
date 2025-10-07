@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //
         $middleware->alias([
             'api.key' => \App\Http\Middleware\ValidateApiKey::class,
+            'rate.limit' => \App\Http\Middleware\RateLimitApi::class,
+
 
         ]);
     })
