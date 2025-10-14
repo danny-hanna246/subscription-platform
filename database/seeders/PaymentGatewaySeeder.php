@@ -2,34 +2,27 @@
 
 namespace Database\Seeders;
 
-use App\Models\PaymentGateway;
 use Illuminate\Database\Seeder;
+use App\Models\PaymentGateway;
 
 class PaymentGatewaySeeder extends Seeder
 {
     public function run(): void
     {
         $gateways = [
-            // Stripe
             [
                 'name' => 'Stripe',
                 'code' => 'stripe',
                 'type' => 'international',
-                'description' => 'Accept credit cards, debit cards, and other payment methods',
+                'description' => 'Accept credit cards worldwide',
                 'config' => [
                     'public_key' => env('STRIPE_PUBLIC_KEY', ''),
                     'secret_key' => env('STRIPE_SECRET_KEY', ''),
-                    'webhook_secret' => env('STRIPE_WEBHOOK_SECRET', ''),
                 ],
-                'is_active' => false,
+                'is_active' => false, // سيفعل لاحقاً
                 'is_test_mode' => true,
-                'supported_currencies' => ['USD', 'EUR', 'GBP', 'SAR', 'AED'],
-                'settings' => [
-                    'payment_methods' => ['card', 'apple_pay', 'google_pay'],
-                ],
+                'supported_currencies' => ['USD', 'EUR', 'GBP'],
             ],
-
-            // PayPal
             [
                 'name' => 'PayPal',
                 'code' => 'paypal',
@@ -38,72 +31,20 @@ class PaymentGatewaySeeder extends Seeder
                 'config' => [
                     'client_id' => env('PAYPAL_CLIENT_ID', ''),
                     'client_secret' => env('PAYPAL_CLIENT_SECRET', ''),
-                    'mode' => env('PAYPAL_MODE', 'sandbox'),
                 ],
                 'is_active' => false,
                 'is_test_mode' => true,
-                'supported_currencies' => ['USD', 'EUR', 'GBP'],
-                'settings' => [
-                    'return_url' => url('/payment/paypal/success'),
-                    'cancel_url' => url('/payment/paypal/cancel'),
-                ],
+                'supported_currencies' => ['USD', 'EUR'],
             ],
-
-            // Syriatel Cash (بوابة دفع محلية سورية)
             [
-                'name' => 'Syriatel Cash',
-                'code' => 'syriatel_cash',
+                'name' => 'Cash Payment',
+                'code' => 'cash',
                 'type' => 'local',
-                'description' => 'الدفع عبر محفظة سيرياتيل كاش',
-                'config' => [
-                    'merchant_id' => env('SYRIATEL_MERCHANT_ID', ''),
-                    'api_key' => env('SYRIATEL_API_KEY', ''),
-                    'api_url' => env('SYRIATEL_API_URL', ''),
-                ],
-                'is_active' => false,
-                'is_test_mode' => true,
-                'supported_currencies' => ['SYP'],
-                'settings' => [
-                    'callback_url' => url('/payment/syriatel/callback'),
-                ],
-            ],
-
-            // MTN Cash (بوابة دفع محلية سورية)
-            [
-                'name' => 'MTN Cash',
-                'code' => 'mtn_cash',
-                'type' => 'local',
-                'description' => 'الدفع عبر محفظة MTN كاش',
-                'config' => [
-                    'merchant_id' => env('MTN_MERCHANT_ID', ''),
-                    'api_key' => env('MTN_API_KEY', ''),
-                    'api_url' => env('MTN_API_URL', ''),
-                ],
-                'is_active' => false,
-                'is_test_mode' => true,
-                'supported_currencies' => ['SYP'],
-                'settings' => [
-                    'callback_url' => url('/payment/mtn/callback'),
-                ],
-            ],
-
-            // بوابة دفع محلية عامة (قابلة للتخصيص)
-            [
-                'name' => 'Local Payment Gateway',
-                'code' => 'local_gateway',
-                'type' => 'local',
-                'description' => 'بوابة دفع محلية قابلة للتخصيص',
-                'config' => [
-                    'api_url' => env('LOCAL_GATEWAY_API_URL', ''),
-                    'api_key' => env('LOCAL_GATEWAY_API_KEY', ''),
-                    'merchant_id' => env('LOCAL_GATEWAY_MERCHANT_ID', ''),
-                ],
-                'is_active' => false,
-                'is_test_mode' => true,
-                'supported_currencies' => ['SYP'],
-                'settings' => [
-                    'callback_url' => url('/payment/local/callback'),
-                ],
+                'description' => 'Accept cash payment at office',
+                'config' => [],
+                'is_active' => true,
+                'is_test_mode' => false,
+                'supported_currencies' => ['USD', 'SYP', 'SAR'],
             ],
         ];
 

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\EmailTemplate;
 use Illuminate\Database\Seeder;
+use App\Models\EmailTemplate;
 
 class EmailTemplateSeeder extends Seeder
 {
@@ -11,27 +11,19 @@ class EmailTemplateSeeder extends Seeder
     {
         $templates = [
             [
-                'name' => 'welcome_email',
-                'subject' => 'Welcome to {app_name}',
-                'body_html' => '<h1>Welcome {customer_name}!</h1><p>Thank you for subscribing.</p>',
-                'body_text' => 'Welcome {customer_name}! Thank you for subscribing.',
-                'variables' => ['customer_name', 'app_name'],
-                'is_active' => true,
-            ],
-            [
                 'name' => 'license_key_delivery',
                 'subject' => 'Your License Key - {product_name}',
-                'body_html' => '<h1>Your License Key</h1><p>Dear {customer_name},</p><p>Your license key: <strong>{license_key}</strong></p><p>Expires: {expires_at}</p>',
-                'body_text' => 'Dear {customer_name}, Your license key: {license_key}. Expires: {expires_at}',
-                'variables' => ['customer_name', 'license_key', 'product_name', 'expires_at'],
+                'body_html' => '<h1>Your License Key</h1><p>Dear {customer_name},</p><p>License Key: <strong>{license_key}</strong></p>',
+                'body_text' => 'Your License Key: {license_key}',
+                'variables' => ['customer_name', 'license_key', 'product_name'],
                 'is_active' => true,
             ],
             [
                 'name' => 'subscription_expiring',
                 'subject' => 'Your Subscription is Expiring Soon',
-                'body_html' => '<h1>Subscription Expiring</h1><p>Dear {customer_name},</p><p>Your subscription will expire on {expires_at}.</p>',
-                'body_text' => 'Dear {customer_name}, Your subscription will expire on {expires_at}.',
-                'variables' => ['customer_name', 'expires_at'],
+                'body_html' => '<h1>Subscription Expiring</h1><p>Your subscription will expire in {days_remaining} days.</p>',
+                'body_text' => 'Your subscription expires in {days_remaining} days',
+                'variables' => ['customer_name', 'days_remaining'],
                 'is_active' => true,
             ],
         ];

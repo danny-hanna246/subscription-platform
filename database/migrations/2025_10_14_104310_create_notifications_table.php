@@ -14,12 +14,19 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type');
-            $table->morphs('notifiable');
+            
+            // هذا السطر يقوم بإنشاء notifiable_type و notifiable_id 
+            // ويضيف الفهرس المركب تلقائيًا.
+            $table->morphs('notifiable'); 
+            
             $table->text('data');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
-            $table->index(['notifiable_type', 'notifiable_id']);
+            // الفهرس على notifiable_type و notifiable_id محذوف هنا 
+            // لأنه مكرر لعمل دالة morphs()
+            
+            // الفهرس على read_at ضروري ويجب الاحتفاظ به
             $table->index('read_at');
         });
     }

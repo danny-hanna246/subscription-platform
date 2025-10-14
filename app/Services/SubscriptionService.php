@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LicenseKeyMail;
+use App\Jobs\SendLicenseKeyEmail;
 
 class SubscriptionService
 {
@@ -33,8 +34,7 @@ class SubscriptionService
 
             // تحديث حالة الطلب
             $request->update(['status' => 'completed']);
-            Mail::to($subscription->customer->email)
-                ->queue(new LicenseKeyMail($license));
+            SendLicenseKeyEmail::dispatch($license);;
             // تسجيل في audit log
             AuditLog::log('Subscription', $subscription->id, 'create', [
                 'request_id' => $request->id,
