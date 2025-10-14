@@ -3,31 +3,43 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Auth\Middleware\Authenticate as Middleware;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
-class Authenticate extends Middleware
+class Authenticate
 {
-    public function handle($request, Closure $next, ...$guards)
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next, ...$guards): Response
     {
+        // إذا لم يتم تحديد guards، استخدم null (default)
         $guards = empty($guards) ? [null] : $guards;
 
+        // التحقق من كل guard
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                // إذا المستخدم مسجل دخول، استمر
                 return $next($request);
             }
         }
 
+        // المستخدم غير مسجل دخول
         if ($request->expectsJson()) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json([
+                'message' => 'Unauthenticated.'
+            ], 401);
         }
 
-        // لو كان الحارس المطلوب admin نعيد للتسمية admin.login
+        // إعادة التوجيه حسب الـ guard
         if (in_array('admin', $guards)) {
             return redirect()->guest(route('admin.login'));
         }
 
-        // الافتراضي
+        // الافتراضي للـ users
         return redirect()->guest(route('login'));
     }
 }

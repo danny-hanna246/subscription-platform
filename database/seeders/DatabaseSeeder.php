@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             EmailTemplateSeeder::class,
             ProductSeeder::class,
             PaymentGatewaySeeder::class, // جديد
+            ApiKeySeeder::class,
         ]);
     }
 }

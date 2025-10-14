@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSubscriptionRequestRequest;
 use App\Http\Resources\SubscriptionRequestResource;
+use App\Models\Admin;
 use App\Models\SubscriptionRequest;
 use App\Models\Plan;
 use App\Models\Coupon;
 use App\Models\AuditLog;
+use App\Notifications\NewSubscriptionRequestNotification;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
 
@@ -71,7 +73,10 @@ class SubscriptionRequestController extends Controller
         }
 
         AuditLog::log('SubscriptionRequest', $subscriptionRequest->id, 'create', $request->validated());
-
+        $admins = Admin::where('is_active', true)->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new NewSubscriptionRequestNotification($subscriptionRequest));
+        }
         return new SubscriptionRequestResource($subscriptionRequest->load(['customer', 'plan']));
     }
 

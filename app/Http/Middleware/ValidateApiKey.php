@@ -15,12 +15,9 @@ class ValidateApiKey
         $apiKey = $request->header('X-API-Key');
 
         if (!$apiKey) {
-            AuditLogService::logSecurityEvent('Missing API Key', [
-                'endpoint' => $request->path(),
-            ]);
-
             return response()->json([
                 'error' => 'API key is required',
+                'message' => 'Please provide X-API-Key header'
             ], 401);
         }
 
@@ -29,54 +26,31 @@ class ValidateApiKey
             ->first();
 
         if (!$key) {
-            AuditLogService::logSecurityEvent('Invalid API Key', [
-                'api_key' => substr($apiKey, 0, 10) . '...',
-                'endpoint' => $request->path(),
-            ]);
-
             return response()->json([
                 'error' => 'Invalid API key',
+                'message' => 'The provided API key is invalid or inactive'
             ], 401);
         }
 
         // التحقق من IP
         if (!$key->isIpAllowed($request->ip())) {
-            AuditLogService::logSecurityEvent('Unauthorized IP', [
-                'api_key_id' => $key->id,
-                'client_name' => $key->client_name,
-                'endpoint' => $request->path(),
-            ]);
-
             return response()->json([
                 'error' => 'IP address not allowed',
+                'message' => 'Your IP address is not authorized'
             ], 403);
         }
 
-        // التحقق من الصلاحيات
+        // التحقق من الصلاحيات (إذا تم تحديدها)
         if ($scope && !$key->hasScope($scope)) {
-            AuditLogService::logSecurityEvent('Insufficient Permissions', [
-                'api_key_id' => $key->id,
-                'required_scope' => $scope,
-                'endpoint' => $request->path(),
-            ]);
-
             return response()->json([
                 'error' => 'Insufficient permissions',
+                'message' => "This API key doesn't have '{$scope}' permission"
             ], 403);
         }
 
+        // إضافة معلومات API Key للـ request
         $request->merge(['api_client' => $key]);
 
-        $startTime = microtime(true);
-        $response = $next($request);
-        $duration = round((microtime(true) - $startTime) * 1000, 2);
-
-        AuditLogService::logApiRequest(
-            $request->path(),
-            $response->status(),
-            $duration
-        );
-
-        return $response;
+        return $next($request);
     }
 }

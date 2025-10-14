@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+
+
 class Admin extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable, HasApiTokens;

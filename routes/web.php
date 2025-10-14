@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\SubscriptionRequestController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PaymentController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -21,14 +22,19 @@ Route::get('/login', function () {
 Route::redirect('/', '/admin/login');
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Auth routes
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest:admin');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // Auth routes (بدون middleware)
+    Route::get('/login', [AuthController::class, 'showLogin'])
+        ->name('login')
+        ->middleware('guest:admin');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->name('login.post');
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->name('logout');
 
-    // Protected routes
-    Route::middleware(['auth:admin'])->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Protected routes (محمية بـ auth:admin)
+    Route::middleware('auth:admin')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
         Route::resource('api-keys', ApiKeyController::class)->except(['show', 'edit', 'update']);
 
         // Products
@@ -57,5 +63,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Payments
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     });
 });

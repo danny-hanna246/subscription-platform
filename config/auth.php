@@ -42,7 +42,7 @@ return [
         ],
         'admin' => [
             'driver' => 'session',
-            'provider' => 'admins', // Points to the new provider below
+            'provider' => 'admins',
         ],
     ],
     // ADD THIS GUARD:
@@ -67,13 +67,10 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => App\Models\User::class,
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // إضافة provider للـ admins
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
