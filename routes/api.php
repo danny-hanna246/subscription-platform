@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\IntegrationController;
 // للتطبيقات الخارجية للتحقق من التراخيص
 // لا يحتاج API Key
 Route::post('/v1/licenses/validate', [LicenseValidationController::class, 'validate'])
-    ->middleware('throttle:120,1'); // 120 طلب في الدقيقة
+    ->middleware('throttle:10,1'); // 120 طلب في الدقيقة
 
 // =====================================================
 // 2. Integration API (محمي بـ API Key)

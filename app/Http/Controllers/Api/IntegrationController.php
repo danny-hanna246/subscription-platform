@@ -8,24 +8,34 @@ use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Coupon;
 use App\Models\SubscriptionRequest;
+use App\Services\ApiCacheService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class IntegrationController extends Controller
 {
+
+    protected $cacheService;
+
+    public function __construct(ApiCacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
     /**
      * الحصول على جميع المنتجات المتاحة
      * GET /api/integration/v1/products
      */
+    // في IntegrationController
     public function getProducts()
     {
-        $products = Product::with(['plans' => function ($query) {
-            $query->where('active', true);
-        }])->get();
+        $products = $this->cacheService->cacheProducts();
 
         return response()->json([
             'success' => true,
             'data' => $products,
+            'cached' => true,
+            'timestamp' => now()->toIso8601String()
         ]);
     }
 
@@ -36,17 +46,14 @@ class IntegrationController extends Controller
      */
     public function getPlans(Request $request)
     {
-        $query = Plan::with('product')->where('active', true);
-
-        if ($request->filled('product_id')) {
-            $query->where('product_id', $request->product_id);
-        }
-
-        $plans = $query->get();
+        $productId = $request->filled('product_id') ? $request->product_id : null;
+        $plans = $this->cacheService->cachePlans($productId);
 
         return response()->json([
             'success' => true,
             'data' => $plans,
+            'cached' => true,
+            'timestamp' => now()->toIso8601String()
         ]);
     }
 

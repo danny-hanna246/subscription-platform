@@ -12,11 +12,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LicenseKeyMail;
 use App\Jobs\SendLicenseKeyEmail;
+use App\Services\WebhookService;
 
 class SubscriptionService
 {
+    protected $webhookService;
+
+    public function __construct(WebhookService $webhookService)
+    {
+        $this->webhookService = $webhookService;
+    }
     public function createSubscriptionFromRequest(SubscriptionRequest $request)
     {
+        $apiKeyId = request()->get('api_client')?->id;
+
         return DB::transaction(function () use ($request) {
             // إنشاء الاشتراك
             $subscription = Subscription::create([
@@ -41,12 +50,24 @@ class SubscriptionService
             ]);
 
             return [
-                'subscription' => $subscription->load('plan', 'customer'),
+                'subscription' => $subscription,
                 'license' => $license,
             ];
         });
-    }
 
+        if ($apiKeyId) {
+            $this->webhookService->send($apiKeyId, 'subscription.created', [
+                'subscription_id' => $result['subscription']->id,
+                'customer_email' => $result['subscription']->customer->email,
+                'plan_id' => $result['subscription']->plan_id,
+                'license_key' => $result['license']->license_key,
+                'starts_at' => $result['subscription']->starts_at->toIso8601String(),
+                'ends_at' => $result['subscription']->ends_at->toIso8601String(),
+            ]);
+        }
+
+        return $result;
+    }
     public function generateLicense(Subscription $subscription)
     {
         $licenseKey = License::generateLicenseKey('LIC');
