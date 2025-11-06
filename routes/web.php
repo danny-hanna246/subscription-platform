@@ -65,8 +65,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Payments
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 
-        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
+        Route::post('/notifications/mark-read/{id}', [NotificationController::class, 'markAsRead'])->name('admin.notifications.mark-read');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
         Route::prefix('licenses/{license}')->group(function () {
