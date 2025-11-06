@@ -16,7 +16,7 @@ class StoreSubscriptionRequestRequest extends FormRequest
         return [
             'customer_id' => 'required|exists:customers,id',
             'plan_id' => 'required|exists:plans,id',
-            'payment_method' => 'required|in:online,cash',
+            'payment_method' => 'sometimes|in:online,cash',
             'coupon_code' => 'nullable|string|exists:coupons,code',
             'notes' => 'nullable|string',
         ];

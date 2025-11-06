@@ -10,8 +10,18 @@ use Illuminate\Support\Facades\DB;
 
 class LicenseValidationService
 {
+    protected $geoIpService;
+
+    public function __construct(GeoIpService $geoIpService)
+    {
+        $this->geoIpService = $geoIpService;
+    }
+
     public function validate($licenseKey, $deviceId, $deviceInfo = null)
     {
+        $userIp = request()->ip();
+        $geoLocation = null;
+
         // البحث عن الترخيص
         $license = License::with(['subscription.plan', 'devices'])
             ->where('license_key', $licenseKey)
@@ -19,7 +29,7 @@ class LicenseValidationService
 
         // الترخيص غير موجود
         if (!$license) {
-            $this->logValidation($licenseKey, null, 'not_found', $deviceId, 404);
+            $this->logValidation($licenseKey, null, 'not_found', $deviceId, 404, null, null);
 
             return [
                 'valid' => false,
@@ -30,9 +40,48 @@ class LicenseValidationService
             ];
         }
 
+        // ==================================================
+        // 🌍 التحقق من التقييد الجغرافي
+        // ==================================================
+        if ($license->geo_restriction_enabled && !empty($license->allowed_countries)) {
+            $geoLocation = $this->geoIpService->getLocation($userIp);
+
+            // التحقق من صلاحية الدولة
+            if (!$this->geoIpService->isAllowedCountry($userIp, $license->allowed_countries)) {
+                $this->logValidation(
+                    $licenseKey,
+                    $license->id,
+                    'geo_restricted',
+                    $deviceId,
+                    403,
+                    $geoLocation['country_code'] ?? null,
+                    $geoLocation['country_name'] ?? null
+                );
+
+                return [
+                    'valid' => false,
+                    'status' => 'geo_restricted',
+                    'message' => 'This license is not available in your country.',
+                    'data' => [
+                        'your_country' => $geoLocation['country_name'] ?? 'Unknown',
+                        'allowed_countries' => $license->allowed_countries,
+                    ],
+                    'response_code' => 403,
+                ];
+            }
+        }
+
         // التحقق من حالة الترخيص
         if ($license->status === 'revoked') {
-            $this->logValidation($licenseKey, $license->id, 'revoked', $deviceId, 403);
+            $this->logValidation(
+                $licenseKey,
+                $license->id,
+                'revoked',
+                $deviceId,
+                403,
+                $geoLocation['country_code'] ?? null,
+                $geoLocation['country_name'] ?? null
+            );
 
             return [
                 'valid' => false,
@@ -46,7 +95,15 @@ class LicenseValidationService
         // التحقق من تاريخ الانتهاء
         if ($license->expires_at && Carbon::now()->greaterThan($license->expires_at)) {
             $license->update(['status' => 'expired']);
-            $this->logValidation($licenseKey, $license->id, 'expired', $deviceId, 403);
+            $this->logValidation(
+                $licenseKey,
+                $license->id,
+                'expired',
+                $deviceId,
+                403,
+                $geoLocation['country_code'] ?? null,
+                $geoLocation['country_name'] ?? null
+            );
 
             return [
                 'valid' => false,
@@ -62,7 +119,15 @@ class LicenseValidationService
         // التحقق من الاشتراك
         $subscription = $license->subscription;
         if (!$subscription->isActive()) {
-            $this->logValidation($licenseKey, $license->id, 'subscription_inactive', $deviceId, 403);
+            $this->logValidation(
+                $licenseKey,
+                $license->id,
+                'subscription_inactive',
+                $deviceId,
+                403,
+                $geoLocation['country_code'] ?? null,
+                $geoLocation['country_name'] ?? null
+            );
 
             return [
                 'valid' => false,
@@ -81,7 +146,15 @@ class LicenseValidationService
             $currentDevicesCount = $license->devices()->count();
 
             if ($currentDevicesCount >= $deviceLimit) {
-                $this->logValidation($licenseKey, $license->id, 'device_limit_reached', $deviceId, 403);
+                $this->logValidation(
+                    $licenseKey,
+                    $license->id,
+                    'device_limit_reached',
+                    $deviceId,
+                    403,
+                    $geoLocation['country_code'] ?? null,
+                    $geoLocation['country_name'] ?? null
+                );
 
                 return [
                     'valid' => false,
@@ -109,7 +182,15 @@ class LicenseValidationService
         }
 
         // الترخيص صالح
-        $this->logValidation($licenseKey, $license->id, 'valid', $deviceId, 200);
+        $this->logValidation(
+            $licenseKey,
+            $license->id,
+            'valid',
+            $deviceId,
+            200,
+            $geoLocation['country_code'] ?? null,
+            $geoLocation['country_name'] ?? null
+        );
 
         return [
             'valid' => true,
@@ -122,19 +203,24 @@ class LicenseValidationService
                 'allowed_devices' => $subscription->plan->device_limit,
                 'current_devices' => $license->devices()->count(),
                 'remaining_days' => $subscription->remainingDays(),
+                'geo_restriction_enabled' => $license->geo_restriction_enabled,
             ],
             'response_code' => 200,
         ];
     }
 
-    protected function logValidation($licenseKey, $licenseId, $status, $deviceId, $responseCode)
+    protected function logValidation($licenseKey, $licenseId, $status, $deviceId, $responseCode, $countryCode = null, $countryName = null)
     {
-        ValidationLog::logValidation([
-            'license_key' => $licenseKey,
+        ValidationLog::create([
+            'license_key_attempted' => $licenseKey,
             'license_id' => $licenseId,
             'status' => $status,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
             'device_id' => $deviceId,
             'response_code' => $responseCode,
+            'country_code' => $countryCode,
+            'country_name' => $countryName,
         ]);
     }
 }

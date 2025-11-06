@@ -72,37 +72,5 @@ class ProductSeeder extends Seeder
             'features' => ['Basic Inventory', 'Email Support'],
             'active' => true,
         ]);
-
-        $product = Product::create([
-            'name' => 'برنامج المحاسبة',
-            'slug' => 'accounting-software',
-            'description' => 'نظام محاسبي متكامل للشركات',
-        ]);
-
-        // خطة شهرية
-        Plan::create([
-            'product_id' => $product->id,
-            'name' => 'خطة شهرية',
-            'price' => 99.99,
-            'currency' => 'USD',
-            'duration_days' => 30,
-            'device_limit' => 1,
-            'user_limit' => 1,
-            'features' => ['جميع الميزات الأساسية'],
-            'is_active' => true,
-        ]);
-
-        // خطة سنوية
-        Plan::create([
-            'product_id' => $product->id,
-            'name' => 'خطة سنوية',
-            'price' => 999.99,
-            'currency' => 'USD',
-            'duration_days' => 365,
-            'device_limit' => 3,
-            'user_limit' => 5,
-            'features' => ['جميع الميزات', 'دعم أولوية', 'تدريب مجاني'],
-            'is_active' => true,
-        ]);
     }
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\SubscriptionRequestController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\LicenseGeoRestrictionController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PaymentController;
 use Illuminate\Support\Facades\Auth;
@@ -67,5 +68,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
+        Route::prefix('licenses/{license}')->group(function () {
+            // عرض صفحة إدارة التقييد الجغرافي
+            Route::get('/geo-restriction', [LicenseGeoRestrictionController::class, 'edit'])
+                ->name('licenses.geo-restriction.edit');
+
+            // تحديث إعدادات التقييد الجغرافي
+            Route::put('/geo-restriction', [LicenseGeoRestrictionController::class, 'update'])
+                ->name('licenses.update-geo-restriction');
+
+            // تعطيل التقييد الجغرافي
+            Route::post('/geo-restriction/disable', [LicenseGeoRestrictionController::class, 'disable'])
+                ->name('licenses.disable-geo-restriction');
+
+            // عرض إحصائيات التحقق الجغرافي
+            Route::get('/geo-stats', [LicenseGeoRestrictionController::class, 'stats'])
+                ->name('licenses.geo-stats');
+        });
     });
 });

@@ -30,4 +30,5 @@ class PaymentController extends Controller
             $payment->load(['subscriptionRequest.customer', 'subscription'])
         );
     }
+    
 }
