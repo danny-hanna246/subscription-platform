@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\LicenseGeoRestrictionController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PaymentController;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 // alias عام باسم login (خارج مجموعة admin)
@@ -65,10 +66,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Payments
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 
-        Route::get('/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
-        Route::post('/notifications/mark-read/{id}', [NotificationController::class, 'markAsRead'])->name('admin.notifications.mark-read');
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/mark-read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-
         Route::prefix('licenses/{license}')->group(function () {
             // عرض صفحة إدارة التقييد الجغرافي
             Route::get('/geo-restriction', [LicenseGeoRestrictionController::class, 'edit'])
